@@ -9,6 +9,8 @@ BluetoothSerial ESP_BT;
 #define LED_B 2
 #define POT   33
 
+int key = 0;
+
 void setup()
 {
     Serial.begin(9600);
@@ -24,14 +26,42 @@ void loop()
 {
     if (ESP_BT.available())
     {
-        int incoming = ESP_BT.read();
+        char variableKey[3 + 1] = {};
+        int fixedKey = 150;
+        int i = 0;
+        int read = 1;
+        int incoming = ESP_BT.peek();
         int potValue;
 
-        Serial.print("Received: ");
-        Serial.println((char) incoming);
+        Serial.print("ReceivedOrig: ");
+        Serial.println((char)incoming);
+
+        incoming ^= key;
+        Serial.print("ReceivedConv: ");
+        Serial.println((char)incoming);
 
         switch (incoming)
         {
+            case 'K':
+                read = 0;
+                incoming = ESP_BT.read();
+                Serial.print("Received2: ");
+                Serial.println((char) incoming);
+                do {
+                    if (ESP_BT.available()) {
+                        incoming = ESP_BT.read();
+                        Serial.print("ReceivedK: ");
+                        Serial.println((char) incoming);
+                        if ((char)incoming == '.' || incoming < '0' || incoming > '9') {
+                            break;
+                        } else {
+                            variableKey[i] = (char) incoming;
+                            i++;
+                        }
+                    }
+                } while (1);
+                key = fixedKey ^ atoi(variableKey);
+                break;
             case 'R':
                 digitalWrite(LED_R, !digitalRead(LED_R));
                 break;
@@ -53,7 +83,14 @@ void loop()
                 ESP_BT.println(potValue);
                 break;
             default:
+                if (key != 0)
+                {
+                    read = 0;
+                    key = 0;
+                }
                 break;
         }
+
+        if (read) ESP_BT.read();
     }
 }
