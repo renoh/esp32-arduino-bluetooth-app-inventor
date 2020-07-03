@@ -7,6 +7,7 @@ BluetoothSerial ESP_BT;
 #define LED_G 4
 #define LED_Y 5
 #define LED_B 2
+#define POT   33
 
 void setup()
 {
@@ -16,6 +17,7 @@ void setup()
     pinMode(LED_G, OUTPUT);
     pinMode(LED_Y, OUTPUT);
     pinMode(LED_B, OUTPUT);
+    pinMode(POT, INPUT);
 }
 
 void loop()
@@ -23,6 +25,8 @@ void loop()
     if (ESP_BT.available())
     {
         int incoming = ESP_BT.read();
+        int potValue;
+
         Serial.print("Received: ");
         Serial.println(incoming);
 
@@ -39,6 +43,14 @@ void loop()
                 break;
             case 'B':
                 digitalWrite(LED_B, !digitalRead(LED_B));
+                break;
+            case 'P':
+                potValue = analogRead(POT);
+
+                Serial.print("POT: ");
+                Serial.println(potValue);
+
+                ESP_BT.println(potValue);
                 break;
             default:
                 break;
