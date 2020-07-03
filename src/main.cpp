@@ -28,7 +28,7 @@ void loop()
         int potValue;
 
         Serial.print("Received: ");
-        Serial.println(incoming);
+        Serial.println((char) incoming);
 
         switch (incoming)
         {
